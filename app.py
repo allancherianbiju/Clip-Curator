@@ -45,6 +45,6 @@ def index():
 @app.route('/test')
 def test():
     print([ f.path for f in os.scandir(UPLOAD_FOLDER) if f.is_dir() ])
-    return "Hey"
+    return "Hey there!"
 # Traverse through all files in the given directory, list all files from the same day, review and accept form data, delete video permanently (recycle bin is not sustainable),
 # Move on to the next day once all files in that day has been dealt with. 
