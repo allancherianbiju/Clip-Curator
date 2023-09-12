@@ -1,4 +1,4 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, request, redirect, url_for, session
 from flask_thumbnails import Thumbnail
 import pandas as pd
 import os
@@ -10,7 +10,7 @@ UPLOAD_FOLDER = 'static/uploads/'
 
 app = Flask(__name__)
 thumb = Thumbnail(app)
-app.secret_key = "secret key"
+app.secret_key = "$bu_@mn^stmtkr=@e^20_8r0noe&3k03p1l3+h&@va)22q@a_%"
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['THUMBNAIL_MEDIA_ROOT'] = 'D:/Highlights/Clip Curator/static/uploads/Fall Guys'
 app.config['THUMBNAIL_MEDIA_URL'] = '/uploads/'
@@ -39,21 +39,6 @@ def file_size(file_path):
 
 @app.route('/')
 def index():
-    
-    filePath =  '/static/uploads/Fall Guys/Fall Guys 2022.01.23 - 00.40.40.03.DVR.mp4'
-    fileName = filePath.split('/')[4]
-    fullFilePath = 'D:/Highlights/Clip Curator' + filePath
-    
-    return render_template('index.html', 
-        filePath = filePath, 
-        fileName = fileName,
-        fileSize = file_size(fullFilePath),
-        fileCreatedDate = time.ctime(os.path.getctime(fullFilePath)),
-        fileModifiedDate = time.ctime(os.path.getmtime(fullFilePath))
-        )
-
-@app.route('/test')
-def test():
     pathDF = pd.DataFrame({
         'FolderName': [ f.path.replace(UPLOAD_FOLDER, '') for f in os.scandir(UPLOAD_FOLDER) if f.is_dir()],
         'FolderPath': [ f.path for f in os.scandir(UPLOAD_FOLDER) if f.is_dir() ],
@@ -77,6 +62,28 @@ def test():
     # print(len(next(os.walk(UPLOAD_FOLDER+'/Fall Guys'))[2]))
 
     return render_template('filebrowser.html', columnNames = pathDF.columns.values, rowData=list(pathDF.values.tolist()), zip=zip)
+    
+@app.route('/requestHandler', methods = ['POST'])
+def requestHandler():
+    session['currentFolderName'] = request.form['folderName']
+    print(session['currentFolderName'])
+    return 'OK'
+
+
+@app.route('/clip')
+def clip():
+    print(session['currentFolderName'])
+    filePath =  '/static/uploads/Fall Guys/Fall Guys 2022.01.23 - 00.40.40.03.DVR.mp4'
+    fileName = filePath.split('/')[4]
+    fullFilePath = 'D:/Highlights/Clip Curator' + filePath
+    
+    return render_template('index.html', 
+        filePath = filePath, 
+        fileName = fileName,
+        fileSize = file_size(fullFilePath),
+        fileCreatedDate = time.ctime(os.path.getctime(fullFilePath)),
+        fileModifiedDate = time.ctime(os.path.getmtime(fullFilePath))
+        )
 
 @app.route('/credits')
 def credits():

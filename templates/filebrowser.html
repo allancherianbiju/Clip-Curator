@@ -113,14 +113,13 @@ background: linear-gradient(0deg, rgba(35,79,109,0.3785889355742297) 0%, rgba(69
 
   {% for folder in rowData %}
 
-  <div class="col">
+  <div class="col" onclick="folderSelect('{{folder[0]}}')">
     <div class="card text-white card-has-bg click-col"
       style="background-image:url('{% if folder[4] != [] %}{{folder[4][0]}}{% else %}/static/resources/empty-folder.png{% endif %}');">
       <div class="card-img-overlay d-flex flex-column">
         <div class="card-body">
           {# <small class="card-meta mb-2">Thought Leadership</small> #}
-          <h4 class="card-title mt-0 "><a class="text-white" style="text-decoration: none;" herf="#">{{folder[0]}}</a>
-          </h4>
+          <h4 class="card-title mt-0 "><a class="text-white" style="text-decoration: none;" herf="#">{{folder[0]}}</a></h4>
           <small><i class="bi bi-stack"></i> {{folder[3]}}</small>
           <small><i class="bi bi-hdd"></i> {{folder[2]}}</small>
         </div>
@@ -137,5 +136,19 @@ background: linear-gradient(0deg, rgba(35,79,109,0.3785889355742297) 0%, rgba(69
 {% endblock %}
 
 {% block script %}
+
+function folderSelect(folderName) {
+  console.log(folderName);
+  $.ajax({
+    url: '/requestHandler',
+    type: 'POST',
+    data: {'folderName': folderName},
+    success: function(response) {
+        console.log(response);
+        window.location.href = "/clip"
+    }
+});
+
+}
 
 {% endblock %}
