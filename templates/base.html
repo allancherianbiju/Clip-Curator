@@ -18,9 +18,47 @@
             <br><br><br>
 
             <!-- Banner -->
-            <div>
+            {# <div>
                 <h1 class=""><i class="bi bi-play-btn-fill"></i> Clip Curator</h1>
+                <button type="button" class="btn btn-dark"><i class="bi bi-gear-fill"></i></button>
+            </div> #}
+            <div class="row">
+                <div class="col-auto me-auto">
+                    <h1 class=""><i class="bi bi-play-btn-fill"></i> Clip Curator</h1>
+                </div>
+                <div class="col-auto">
+                    <br>
+                    <h1><button type="button" class="btn btn-dark" data-bs-toggle="modal" data-bs-target="#settingsModal"><i class="bi bi-gear-fill"></i></h1>
+                    </button>
+                </div>
             </div>
+            <!-- Vertically centered scrollable modal -->
+            <div class="modal fade" id="settingsModal" tabindex="-1" aria-labelledby="settingsModal" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h1 class="modal-title fs-5" id="exampleModalLabel">Settings</h1>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="form-check form-switch align-middle">
+                                <input class="form-check-input" type="checkbox" role="switch" id="flexSwitchCheckChecked" checked>
+                                <i class="bi bi-moon-stars-fill"></i>
+                                {# <i class="bi bi-brightness-high-fill"></i> #}
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-success">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-floppy-fill" viewBox="0 0 16 16">
+                                    <path d="M0 1.5A1.5 1.5 0 0 1 1.5 0H3v5.5A1.5 1.5 0 0 0 4.5 7h7A1.5 1.5 0 0 0 13 5.5V0h.086a1.5 1.5 0 0 1 1.06.44l1.415 1.414A1.5 1.5 0 0 1 16 2.914V14.5a1.5 1.5 0 0 1-1.5 1.5H14v-5.5A1.5 1.5 0 0 0 12.5 9h-9A1.5 1.5 0 0 0 2 10.5V16h-.5A1.5 1.5 0 0 1 0 14.5v-13Z"/>
+                                    <path d="M3 16h10v-5.5a.5.5 0 0 0-.5-.5h-9a.5.5 0 0 0-.5.5V16Zm9-16H4v5.5a.5.5 0 0 0 .5.5h7a.5.5 0 0 0 .5-.5V0ZM9 1h2v4H9V1Z"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
 
             {% block content %}
             {% endblock %}
@@ -29,7 +67,13 @@
         </div>
 
         <script>
+            $("#flexSwitchCheckChecked").change( function() {
+                $('html').attr('data-bs-theme', function(index, attr){
+                    return attr == 'dark' ? null : 'dark';
+                });
+            });
             {% block script %}
+            
             {% endblock %}
         </script>
     </body>

@@ -11,6 +11,9 @@ UPLOAD_FOLDER = 'static/uploads/'
 app = Flask(__name__)
 thumb = Thumbnail(app)
 app.secret_key = "$bu_@mn^stmtkr=@e^20_8r0noe&3k03p1l3+h&@va)22q@a_%"
+app.config['TEMPLATES_AUTO_RELOAD'] = True
+app.run(debug=True)
+
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['THUMBNAIL_MEDIA_ROOT'] = 'D:/Highlights/Clip Curator/static/uploads/Fall Guys'
 app.config['THUMBNAIL_MEDIA_URL'] = '/uploads/'
@@ -52,15 +55,48 @@ def index():
         if not os.path.exists(path + '/.thumbs'):
             os.makedirs(path + '/.thumbs')
 
+    fileDF = pd.DataFrame(['FileName', 'Timestamp', 'Processed', 'Category', 'Description', 'AdditionalDetails', 'Starring', 'ItemsUsed', 'Remarks', 'Rating', 'Link'])
+    FileName = []
+    Timestamp = []
+    Processed = []
+    Category = []
     for i, path in enumerate(pathDF.FolderPath):
         filenames = next(walk(path), (None, None, []))[2]  # [] if no file
         
         for j, file in enumerate(filenames):
             subprocess.call(['ffmpeg', '-ss', '00:00:01.000', '-i', path + '/' + file, '-vframes', '1', '-s', '480x270', '-n', path + '/.thumbs/' + file.replace('mp4', 'png'), '-loglevel', 'panic'])
-        pathDF['ThumbnailsPath'][i] = [path + '/.thumbs/' + file.replace('mp4', 'png') for file in filenames]
-    print(pathDF)
-    # print(len(next(os.walk(UPLOAD_FOLDER+'/Fall Guys'))[2]))
+            FileName.append(file)
+            # fileDF.at[i+j, 'FileName'] = file
+            Timestamp.append(time.ctime(os.path.getctime('D:/Highlights/Clip Curator/' + path + '/' + file)))
+            # fileDF.at[i+j, 'Timestamp'] = time.ctime(os.path.getctime('D:/Highlights/Clip Curator/' + path + '/' + file))
+            Processed.append('Initialised')
+            # fileDF.at[i+j, 'Processed'] = 'Initialised'
+            Category.append(path.split('/')[2])
+            # fileDF.at[i+j, 'Category'] = path.split('/')[2]
 
+        pathDF.at[i, 'ThumbnailsPath'] = [path + '/.thumbs/' + file.replace('mp4', 'png') for file in filenames]
+    fileDF = pd.DataFrame({
+        'FileName': FileName, 
+        'Timestamp': Timestamp,
+        'Processed': 'Initialised',
+        'Category': Category,
+        'Description': '',
+        'AdditionalDetails': '',
+        'Starring': '',
+        'ItemsUsed': '',
+        'Remarks': '',
+        'Rating': 0.0,
+        'Link': ''
+    })
+    fileDF['Timestamp'] = fileDF['Timestamp'].apply(lambda x: pd.to_datetime(x, format="%a %b %d %H:%M:%S %Y"))
+ 
+   
+    # print(len(next(os.walk(UPLOAD_FOLDER+'/Fall Guys'))[2]))
+    try:
+        fileDF.to_excel('static/uploads/tracking.xlsx', index=False)
+    except:
+        print('Unable to write to file....Did you like open the file or something? Have you given me the proper write access? Check check check...')
+    print(pathDF)
     return render_template('filebrowser.html', columnNames = pathDF.columns.values, rowData=list(pathDF.values.tolist()), zip=zip)
     
 @app.route('/requestHandler', methods = ['POST'])
@@ -69,11 +105,24 @@ def requestHandler():
     print(session['currentFolderName'])
     return 'OK'
 
-
 @app.route('/clip')
 def clip():
+    # Index to keep track of the day that is being reviewed at the moment
+    currentDayIndex = 0
     print(session['currentFolderName'])
-    filePath =  '/static/uploads/Fall Guys/Fall Guys 2022.01.23 - 00.40.40.03.DVR.mp4'
+
+    # Reading tracking data
+    fileDF = pd.read_excel('static/uploads/tracking.xlsx')
+    # Creating a new column to store the date, needed for the groupby
+    fileDF['Date'] = fileDF['Timestamp'].dt.date
+    # Filtering DF based on the selected Category
+    fileDF = fileDF.loc[fileDF['Category'] == session['currentFolderName']]
+    # Grouping by the Date column to create a table with dates and a list filenames corresponding to each date
+    groupedDF = fileDF.groupby('Date')['FileName'].apply(list).reset_index()
+    print(groupedDF)
+
+    # filePath =  '/static/uploads/Fall Guys/Fall Guys 2022.01.23 - 00.40.40.03.DVR.mp4'    
+    filePath =  '/static/uploads/' + session['currentFolderName'] + '/' + groupedDF.at[0, 'FileName'][0]
     fileName = filePath.split('/')[4]
     fullFilePath = 'D:/Highlights/Clip Curator' + filePath
     
@@ -84,6 +133,15 @@ def clip():
         fileCreatedDate = time.ctime(os.path.getctime(fullFilePath)),
         fileModifiedDate = time.ctime(os.path.getmtime(fullFilePath))
         )
+
+@app.route('/test')
+def test():
+    fileDF = pd.read_excel('static/uploads/tracking.xlsx')
+    fileDF['Date'] = fileDF['Timestamp'].dt.date
+    # Now you can group by the 'date' column
+    grouped = fileDF.groupby('Date')['FileName'].apply(list).reset_index()
+    print(grouped)
+    return 'OK'
 
 @app.route('/credits')
 def credits():
