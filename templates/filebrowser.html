@@ -138,14 +138,14 @@ background: linear-gradient(0deg, rgba(35,79,109,0.3785889355742297) 0%, rgba(69
 {% block script %}
 
 function folderSelect(folderName) {
-  console.log(folderName);
   $.ajax({
     url: '/requestHandler',
     type: 'POST',
     data: {'folderName': folderName},
     success: function(response) {
         console.log(response);
-        window.location.href = "/clip"
+        if(response == 'OK')
+          window.location.href = "/clip"
     }
 });
 

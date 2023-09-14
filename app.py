@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, session
+from flask import Flask, render_template, request, redirect, url_for, session, send_from_directory
 from flask_thumbnails import Thumbnail
 import pandas as pd
 import os
@@ -11,6 +11,7 @@ UPLOAD_FOLDER = 'static/uploads/'
 app = Flask(__name__)
 thumb = Thumbnail(app)
 app.secret_key = "$bu_@mn^stmtkr=@e^20_8r0noe&3k03p1l3+h&@va)22q@a_%"
+# Disable the following two lines after debug
 app.config['TEMPLATES_AUTO_RELOAD'] = True
 app.run(debug=True)
 
@@ -39,6 +40,10 @@ def file_size(file_path):
         for ele in os.scandir(file_path):
             size+=os.path.getsize(ele)
         return convert_bytes(size)
+    
+@app.route('/favicon.ico') 
+def favicon(): 
+    return send_from_directory(os.path.join(app.root_path, 'static'), 'favicon.ico', mimetype='image/vnd.microsoft.icon')
 
 @app.route('/')
 def index():
@@ -102,8 +107,14 @@ def index():
 @app.route('/requestHandler', methods = ['POST'])
 def requestHandler():
     session['currentFolderName'] = request.form['folderName']
-    print(session['currentFolderName'])
-    return 'OK'
+    # Get number of files in the selected folder
+    fileCount = len(next(os.walk(UPLOAD_FOLDER+'/' + session['currentFolderName']))[2])
+    print(session['currentFolderName'] + ': ' + str(fileCount))
+
+    if fileCount > 0:
+        return 'OK'
+    else:
+        return 'NOT OK'
 
 @app.route('/clip')
 def clip():
