@@ -1,0 +1,180 @@
+{% extends 'base.html' %}
+{% block style %}
+::-webkit-scrollbar {
+width: 9px;
+}
+
+::-webkit-scrollbar-track {
+background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+background-color: rgba(155, 155, 155, 0.5);
+border-radius: 20px;
+border: transparent;
+}
+
+.spread-out {
+display: flex;
+justify-content: space-between;
+}
+
+.sidebar-height {
+height: 685px;
+}
+
+{% endblock %}
+
+{% block content %}
+<br>
+<!-- Video Player and Form -->
+<div class="row">
+    <!-- Video Player -->
+    <div class="col-md-8">
+        <div class="card shadow">
+            <video controls playsinline autoplay loop width="100%" class="rounded-top" id="videoId">
+                <source src="{{filePath}}" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+            <div class="card-body">
+                <span>
+                    <h5 class="card-title spread-out">
+                        {{fileName}}
+                        <span class="badge bg-secondary shadow-sm">{{fileSize}}</span>
+                    </h5>
+                </span>
+                <p class="card-text"><small class="text-muted">Created: {{fileCreatedDate}} | Modified:
+                        {{fileModifiedDate}}</small></p>
+            </div>
+        </div>
+        <br>
+        <hr>
+        <!-- Thumbnails -->
+        <h5>
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                class="bi bi-arrow-90deg-down" viewBox="0 0 16 16">
+                <path fill-rule="evenodd"
+                    d="M4.854 14.854a.5.5 0 0 1-.708 0l-4-4a.5.5 0 0 1 .708-.708L4 13.293V3.5A2.5 2.5 0 0 1 6.5 1h8a.5.5 0 0 1 0 1h-8A1.5 1.5 0 0 0 5 3.5v9.793l3.146-3.147a.5.5 0 0 1 .708.708l-4 4z" />
+            </svg> More from the same day</i>
+        </h5>
+        <div class="d-flex mt-3 overflow-auto py-2">
+            {#
+            {% for i in range(10) %}
+            <img src="https://source.unsplash.com/random/480x270?sig={{i}}"
+                class="mr-3 m-1 rounded thumbnail {% if currentFileIndex == loop.index-1 %}opacity-25{% endif %}"
+                id="{{loop.index-1}}" alt="{{fileList[loop.index]}}" data-bs-toggle="tooltip" data-bs-placement="bottom"
+                data-bs-title="{{fileList[loop.index-1]}}" style="height: 100px;">
+            {% endfor %}
+            #}
+
+            {% for thumbNail in thumbList %}
+            <a href="#">
+                <img src="{{thumbNail}}"
+                    class="mr-3 m-1 rounded thumbnail {% if currentFileIndex == loop.index-1 %}opacity-25{% endif %}"
+                    id="{{loop.index-1}}" alt="{{fileList[loop.index]}}" data-bs-toggle="tooltip"
+                    data-bs-placement="bottom" data-bs-title="{{fileList[loop.index-1]}}" style="height: 100px;">
+            </a>
+            {% endfor %}
+
+        </div>
+        <hr>
+    </div>
+
+    <!-- Form -->
+    <div class="col-md-4">
+        <form>
+            <div class="d-grid gap-2">
+                <button type="button" class="btn btn-outline-danger" id="DeleteButton"><i class="bi bi-trash3"></i>
+                    Delete
+                </button>
+            </div>
+            <br>
+            <div class="d-grid gap-2">
+                <button type="button" class="btn btn-outline-success" id="KeepButton"><i class="bi bi-check-lg"></i>
+                    Keep
+                </button>
+            </div>
+
+            <br>
+            <!-- Form Fields -->
+            <div class="overflow-auto sidebar-height px-2">
+                <div class="form-floating">
+                    <input type="text" class="form-control" id="FileName" placeholder="FileName" value="{{fileName}}"
+                        disabled>
+                    <label for="FileName">File Name</label>
+                </div>
+                <br>
+                <div class="form-floating">
+                    <input type="text" class="form-control" id="Timestamp" placeholder="Timestamp"
+                        value="{{fileCreatedDate}}" disabled>
+                    <label for="Timestamp">Timestamp</label>
+                </div>
+                <br>
+                <div class="form-floating">
+                    <input type="text" class="form-control" id="Category" placeholder="Category">
+                    <label for="Category">Category</label>
+                </div>
+                <br>
+                <div class="form-floating">
+                    <input type="text" class="form-control" id="Description" placeholder="Description">
+                    <label for="Description">Description</label>
+                </div>
+                <br>
+                <div class="form-floating">
+                    <input type="text" class="form-control" id="AdditionalDetails" placeholder="AdditionalDetails">
+                    <label for="AdditionalDetails">Additional Details</label>
+                </div>
+                <br>
+                <div class="form-floating">
+                    <input type="text" class="form-control" id="Starring" placeholder="Starring">
+                    <label for="Starring">Starring</label>
+                </div>
+                <br>
+                <div class="form-floating">
+                    <input type="text" class="form-control" id="ItemsUsed" placeholder="ItemsUsed">
+                    <label for="ItemsUsed">Items Used</label>
+                </div>
+                <br>
+                <div class="form-floating">
+                    <input type="text" class="form-control" id="IssuesWithTheClip" placeholder="IssuesWithTheClip">
+                    <label for="IssuesWithTheClip">Issues with the clip</label>
+                </div>
+                <br>
+                <div class="form-floating">
+                    <input type="range" class="form-control form-range" min="0" max="10" step="0.1" id="Rating"
+                        placeholder="Rating" oninput="this.nextElementSibling.innerHTML = 'Rating: ' + this.value">
+                    <label for="Rating">Rating</label>
+                </div>
+                <br>
+                <!-- Known issue: Time shows up as 12 hours within Mozilla and not in Chrome -->
+                <div class="form-floating">
+                    <input type="time" class="form-control" id="StartsAt" step="1" value="00:00:00" min="00:00:00">
+                    <label for="StartsAt">Starts At</label>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+<br>
+{% endblock %}
+
+{% block script %}
+$("#KeepButton").click(function () {
+$("#KeepForm").fadeIn();
+$("#KeepButton").fadeTo().html('<i class="bi bi-check-lg"></i> Save');
+$("#DeleteButton").fadeTo().html('<i class="bi bi-trash3"></i>');
+});
+$("#DeleteButton").click(function () {
+$("#KeepButton").fadeTo().html('<i class="bi bi-check-lg"></i>');
+$("#DeleteButton").fadeTo().html('<i class="bi bi-trash3"></i> Delete?');
+});
+
+$("#videoId").on(
+"timeupdate",
+function (event) {
+const seconds = this.currentTime;
+var date = new Date(null);
+date.setSeconds(seconds);
+$("#StartsAt").val(date.toISOString().substr(11, 8));
+});
+{% endblock %}

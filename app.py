@@ -16,13 +16,11 @@ app.config['TEMPLATES_AUTO_RELOAD'] = True
 app.run(debug=True)
 
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-app.config['THUMBNAIL_MEDIA_ROOT'] = 'D:/Highlights/Clip Curator/static/uploads/Fall Guys'
-app.config['THUMBNAIL_MEDIA_URL'] = '/uploads/'
+# app.config['THUMBNAIL_MEDIA_ROOT'] = 'D:/Highlights/Clip Curator/static/uploads/Fall Guys'
+# app.config['THUMBNAIL_MEDIA_URL'] = '/uploads/'
 # app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
 
-df = pd.DataFrame()
-
-# Methods from https://stackoverflow.com/a/39988702
+# Methods from https://stackoverflow.com/a/39988702 for file size conversion
 def convert_bytes(num):
     # this function will convert bytes to MB.... GB... etc
     for x in ['bytes', 'KB', 'MB', 'GB', 'TB']:
@@ -41,12 +39,15 @@ def file_size(file_path):
             size+=os.path.getsize(ele)
         return convert_bytes(size)
     
+# Route for serving the favicon because seeing the error pop up in the dev console was super annoying
 @app.route('/favicon.ico') 
 def favicon(): 
     return send_from_directory(os.path.join(app.root_path, 'static'), 'favicon.ico', mimetype='image/vnd.microsoft.icon')
 
+# Home route for the folder browser
 @app.route('/')
 def index():
+    # Init dataframe to track per folder stats
     pathDF = pd.DataFrame({
         'FolderName': [ f.path.replace(UPLOAD_FOLDER, '') for f in os.scandir(UPLOAD_FOLDER) if f.is_dir()],
         'FolderPath': [ f.path for f in os.scandir(UPLOAD_FOLDER) if f.is_dir() ],
@@ -94,14 +95,15 @@ def index():
         'Link': ''
     })
     fileDF['Timestamp'] = fileDF['Timestamp'].apply(lambda x: pd.to_datetime(x, format="%a %b %d %H:%M:%S %Y"))
- 
+    print(fileDF)
+    print(pathDF)
    
     # print(len(next(os.walk(UPLOAD_FOLDER+'/Fall Guys'))[2]))
     try:
         fileDF.to_excel('static/uploads/tracking.xlsx', index=False)
     except:
         print('Unable to write to file....Did you like open the file or something? Have you given me the proper write access? Check check check...')
-    print(pathDF)
+    # print(pathDF)
     return render_template('filebrowser.html', columnNames = pathDF.columns.values, rowData=list(pathDF.values.tolist()), zip=zip)
     
 @app.route('/requestHandler', methods = ['POST'])
@@ -120,6 +122,8 @@ def requestHandler():
 def clip():
     # Index to keep track of the day that is being reviewed at the moment
     currentDayIndex = 0
+    currentFileIndex = 0
+    
     print(session['currentFolderName'])
 
     # Reading tracking data
@@ -130,19 +134,27 @@ def clip():
     fileDF = fileDF.loc[fileDF['Category'] == session['currentFolderName']]
     # Grouping by the Date column to create a table with dates and a list filenames corresponding to each date
     groupedDF = fileDF.groupby('Date')['FileName'].apply(list).reset_index()
-    print(groupedDF)
+    
+    # print(groupedDF)
+    # print(i for i in groupedDF.FileName[0])
 
-    # filePath =  '/static/uploads/Fall Guys/Fall Guys 2022.01.23 - 00.40.40.03.DVR.mp4'    
-    filePath =  '/static/uploads/' + session['currentFolderName'] + '/' + groupedDF.at[0, 'FileName'][0]
+    filePath =  '/static/uploads/' + session['currentFolderName'] + '/' + groupedDF.at[currentDayIndex, 'FileName'][currentFileIndex]
     fileName = filePath.split('/')[4]
     fullFilePath = 'D:/Highlights/Clip Curator' + filePath
+
+    # Thumbnail Paths for all files of the same day
+    thumbList = [sub.replace('.mp4', '.png') for sub in groupedDF.at[currentDayIndex, 'FileName']]
+    thumbList = ['/static/uploads/' + session['currentFolderName'] + '/.thumbs/' + thumbName for thumbName in thumbList]
     
-    return render_template('index.html', 
+    return render_template('clip.html', 
         filePath = filePath, 
         fileName = fileName,
         fileSize = file_size(fullFilePath),
         fileCreatedDate = time.ctime(os.path.getctime(fullFilePath)),
-        fileModifiedDate = time.ctime(os.path.getmtime(fullFilePath))
+        fileModifiedDate = time.ctime(os.path.getmtime(fullFilePath)),
+        fileList = groupedDF.at[currentDayIndex, 'FileName'],
+        thumbList = thumbList,
+        currentFileIndex = currentFileIndex
         )
 
 @app.route('/test')
