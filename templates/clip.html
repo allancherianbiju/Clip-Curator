@@ -21,6 +21,7 @@ justify-content: space-between;
 
 .sidebar-height {
 height: 685px;
+
 }
 
 {% endblock %}
@@ -61,18 +62,18 @@ height: 685px;
             {#
             {% for i in range(10) %}
             <img src="https://source.unsplash.com/random/480x270?sig={{i}}"
-                class="mr-3 m-1 rounded thumbnail {% if currentFileIndex == loop.index-1 %}opacity-25{% endif %}"
+                class="mr-3 m-1 rounded thumbnail {% if currentIndex['currentFileIndex'] == loop.index-1 %}opacity-25{% endif %}"
                 id="{{loop.index-1}}" alt="{{fileList[loop.index]}}" data-bs-toggle="tooltip" data-bs-placement="bottom"
                 data-bs-title="{{fileList[loop.index-1]}}" style="height: 100px;">
             {% endfor %}
             #}
 
-            {% for thumbNail in thumbList %}
-            <a href="#">
-                <img src="{{thumbNail}}"
-                    class="mr-3 m-1 rounded thumbnail {% if currentFileIndex == loop.index-1 %}opacity-25{% endif %}"
-                    id="{{loop.index-1}}" alt="{{fileList[loop.index]}}" data-bs-toggle="tooltip"
-                    data-bs-placement="bottom" data-bs-title="{{fileList[loop.index-1]}}" style="height: 100px;">
+            {% for thumbnail in thumbList %}
+            <a {% if currentIndex['currentFileIndex'] != loop.index-1 %}href="" id="{{loop.index-1}}" onclick="sendButtonId(this.id)"{% else %}disabled{% endif %} role="button">
+                <img src="{{thumbnail}}"
+                    class="mr-3 m-1 rounded thumbnail {% if currentIndex['currentFileIndex'] == loop.index-1 %}opacity-25{% endif %}"
+                    alt="{{fileList[loop.index]}}" data-bs-toggle="tooltip" data-bs-placement="bottom"
+                    data-bs-title="{{fileList[loop.index-1]}}" style="height: 100px;">
             </a>
             {% endfor %}
 
@@ -159,6 +160,7 @@ height: 685px;
 {% endblock %}
 
 {% block script %}
+//Keep and Delete Button
 $("#KeepButton").click(function () {
 $("#KeepForm").fadeIn();
 $("#KeepButton").fadeTo().html('<i class="bi bi-check-lg"></i> Save');
@@ -169,6 +171,7 @@ $("#KeepButton").fadeTo().html('<i class="bi bi-check-lg"></i>');
 $("#DeleteButton").fadeTo().html('<i class="bi bi-trash3"></i> Delete?');
 });
 
+//Starts At Time Update
 $("#videoId").on(
 "timeupdate",
 function (event) {
@@ -177,4 +180,32 @@ var date = new Date(null);
 date.setSeconds(seconds);
 $("#StartsAt").val(date.toISOString().substr(11, 8));
 });
+
+//Thumbnail Click, Selecting alternate video from the same day
+function folderSelect(folderName) {
+    $.ajax({
+      url: '/requestHandler',
+      type: 'POST',
+      data: {'folderName': folderName},
+      success: function(response) {
+          console.log(response);
+          if(response == 'OK')
+            window.location.href = "/clip"
+      }
+  });
+}
+
+//Clip Select
+function sendButtonId(buttonID) {
+    $.ajax({
+        url: '/requestHandler',
+        type: 'POST',
+        data: {'thumbnailID': buttonID},
+        success: function(response) {
+            console.log(response);
+            if(response == 'OK')
+                window.location.href = "/clip"
+        }
+    });
+}
 {% endblock %}

@@ -25,10 +25,26 @@
                 <div class="col-auto me-auto">
                     <h1><i class="bi bi-play-btn-fill"></i> Clip Curator</h1>
                 </div>
+                {% if filePath %}
+                <div class="col-auto">
+                    <h1><button type="button" class="btn btn-dark" id="Prev" {% if currentIndex['dayUnderflow'] %}disabled{% endif %} onclick="sendButtonId(this.id)"><i class="bi bi-arrow-left"></i></h1>
+                    </button>
+                </div>
+                <div class="col-auto">
+                    <h1><button type="button" class="btn btn-dark" id="Next" {% if currentIndex['dayOverflow'] %}disabled{% endif %} onclick="sendButtonId(this.id)"><i class="bi bi-arrow-right"></i></h1>
+                    </button>
+                </div>
                 <div class="col-auto">
                     <h1><button type="button" class="btn btn-dark" onclick="location.href='/'"><i class="bi bi-house-door-fill"></i></h1>
                     </button>
                 </div>
+                {% endif %}
+                {% if pageType == 'Landing' %}
+                <div class="col-auto">
+                    <h1><button type="button" class="btn btn-dark"><i class="bi bi-arrow-repeat"></i></h1>
+                    </button>
+                </div>
+                {% endif %}
                 <div class="col-auto">
                     <h1><button type="button" class="btn btn-dark" data-bs-toggle="modal" data-bs-target="#settingsModal"><i class="bi bi-gear-fill"></i></h1>
                     </button>
